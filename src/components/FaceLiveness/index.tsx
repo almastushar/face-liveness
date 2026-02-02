@@ -263,6 +263,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
           face={currentFace as any}
           guideBox={guideBox}
           showLandmarks={showLandmarks}
+          stream={camera.stream}
         />
         
         {/* Debug overlay */}
