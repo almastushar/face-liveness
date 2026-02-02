@@ -1,9 +1,8 @@
 // Camera view component with video and canvas overlay
 
 import React, { useRef, useEffect, useCallback } from 'react';
-import type { Face } from '@tensorflow-models/face-landmarks-detection';
-import { CONFIG, BoundingBox } from '@/types/liveness';
-import { drawLandmarks, drawBoundingBox, calculateBoundingBox } from '@/utils/landmarks';
+import { BoundingBox } from '@/types/liveness';
+import { Face } from '@/hooks/useFaceDetector';
 
 interface CameraViewProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -11,6 +10,7 @@ interface CameraViewProps {
   face: Face | null;
   guideBox: BoundingBox | null;
   showLandmarks?: boolean;
+  stream?: MediaStream | null;
 }
 
 export function CameraView({
@@ -19,6 +19,7 @@ export function CameraView({
   face,
   guideBox,
   showLandmarks = false,
+  stream,
 }: CameraViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dimensionsSetRef = useRef(false);
@@ -36,6 +37,15 @@ export function CameraView({
       dimensionsSetRef.current = true;
     }
   }, [videoRef]);
+  
+  // Ensure video has stream when it becomes available
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video && stream && !video.srcObject) {
+      video.srcObject = stream;
+      video.play().catch(console.error);
+    }
+  }, [videoRef, stream]);
   
   // Listen for video metadata
   useEffect(() => {
@@ -72,7 +82,7 @@ export function CameraView({
     
     // Draw guide box
     if (guideBox) {
-      ctx.strokeStyle = face ? 'hsl(142, 76%, 45%)' : 'hsl(var(--primary))';
+      ctx.strokeStyle = face ? '#22c55e' : '#1e293b';
       ctx.lineWidth = 3;
       ctx.setLineDash([10, 5]);
       ctx.strokeRect(guideBox.x, guideBox.y, guideBox.width, guideBox.height);
@@ -81,7 +91,7 @@ export function CameraView({
       // Draw corner accents
       const cornerLength = 20;
       ctx.lineWidth = 4;
-      ctx.strokeStyle = face ? 'hsl(142, 76%, 45%)' : 'hsl(var(--primary))';
+      ctx.strokeStyle = face ? '#22c55e' : '#3b82f6';
       
       // Top-left
       ctx.beginPath();
@@ -114,10 +124,12 @@ export function CameraView({
     
     // Draw face landmarks and bounding box
     if (face && showLandmarks) {
-      drawLandmarks(ctx, face, 'rgba(0, 255, 0, 0.5)', 1);
-      
-      const faceBbox = calculateBoundingBox(face);
-      drawBoundingBox(ctx, faceBbox, 'hsl(142, 76%, 45%)', 2);
+      ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
+      for (const kp of face.keypoints) {
+        ctx.beginPath();
+        ctx.arc(kp.x, kp.y, 1, 0, 2 * Math.PI);
+        ctx.fill();
+      }
     }
   }, [isActive, face, guideBox, showLandmarks]);
   
@@ -135,7 +147,7 @@ export function CameraView({
         autoPlay
         playsInline
         muted
-        className="absolute inset-0 w-full h-full object-cover mirror"
+        className="absolute inset-0 w-full h-full object-cover"
         style={{ transform: 'scaleX(-1)' }}
       />
       <canvas
@@ -143,6 +155,11 @@ export function CameraView({
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
         style={{ transform: 'scaleX(-1)' }}
       />
+      {!stream && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted">
+          <p className="text-muted-foreground">Camera loading...</p>
+        </div>
+      )}
     </div>
   );
 }

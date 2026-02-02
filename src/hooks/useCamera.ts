@@ -13,6 +13,7 @@ export interface CameraState {
 export interface CameraControls {
   startCamera: () => Promise<void>;
   stopCamera: () => void;
+  assignStream: (video: HTMLVideoElement) => Promise<void>;
 }
 
 export function useCamera(): CameraState & CameraControls & { videoRef: React.RefObject<HTMLVideoElement> } {
@@ -43,6 +44,38 @@ export function useCamera(): CameraState & CameraControls & { videoRef: React.Re
     }));
   }, []);
   
+  // Assign stream to a video element
+  const assignStream = useCallback(async (video: HTMLVideoElement) => {
+    if (!streamRef.current) return;
+    
+    video.srcObject = streamRef.current;
+    
+    await new Promise<void>((resolve, reject) => {
+      const onLoadedMetadata = () => {
+        video.removeEventListener('loadedmetadata', onLoadedMetadata);
+        video.removeEventListener('error', onError);
+        resolve();
+      };
+      
+      const onError = () => {
+        video.removeEventListener('loadedmetadata', onLoadedMetadata);
+        video.removeEventListener('error', onError);
+        reject(new Error('Failed to load video'));
+      };
+      
+      // Check if already loaded
+      if (video.readyState >= 1) {
+        resolve();
+        return;
+      }
+      
+      video.addEventListener('loadedmetadata', onLoadedMetadata);
+      video.addEventListener('error', onError);
+    });
+    
+    await video.play();
+  }, []);
+  
   const startCamera = useCallback(async () => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
@@ -65,31 +98,9 @@ export function useCamera(): CameraState & CameraControls & { videoRef: React.Re
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
       
+      // If video element exists, assign stream to it
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        
-        // Wait for video to be ready
-        await new Promise<void>((resolve, reject) => {
-          const video = videoRef.current!;
-          
-          const onLoadedMetadata = () => {
-            video.removeEventListener('loadedmetadata', onLoadedMetadata);
-            video.removeEventListener('error', onError);
-            resolve();
-          };
-          
-          const onError = () => {
-            video.removeEventListener('loadedmetadata', onLoadedMetadata);
-            video.removeEventListener('error', onError);
-            reject(new Error('Failed to load video'));
-          };
-          
-          video.addEventListener('loadedmetadata', onLoadedMetadata);
-          video.addEventListener('error', onError);
-          
-          // Start playing
-          video.play().catch(reject);
-        });
+        await assignStream(videoRef.current);
       }
       
       setState({
@@ -124,7 +135,7 @@ export function useCamera(): CameraState & CameraControls & { videoRef: React.Re
         hasPermission: false,
       });
     }
-  }, []);
+  }, [assignStream]);
   
   // Cleanup on unmount
   useEffect(() => {
@@ -133,10 +144,18 @@ export function useCamera(): CameraState & CameraControls & { videoRef: React.Re
     };
   }, [stopCamera]);
   
+  // When stream is available, ensure video element has it
+  useEffect(() => {
+    if (state.stream && videoRef.current && !videoRef.current.srcObject) {
+      assignStream(videoRef.current).catch(console.error);
+    }
+  }, [state.stream, assignStream]);
+  
   return {
     ...state,
     startCamera,
     stopCamera,
+    assignStream,
     videoRef,
   };
 }
