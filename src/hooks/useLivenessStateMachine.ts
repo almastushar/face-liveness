@@ -24,6 +24,7 @@ import {
   updateAntiSpoofState, 
   getAntiSpoofDebugInfo 
 } from '@/utils/antiSpoof';
+import { playSuccessSound, playCompletionSound } from '@/utils/audio';
 
 const initialBlinkState: BlinkState = {
   isCalibrating: true,
@@ -168,6 +169,9 @@ export function useLivenessStateMachine(
           },
         };
         
+        // Play completion fanfare
+        playCompletionSound();
+        
         // Call success callback
         setTimeout(() => onSuccess?.(result), 0);
         
@@ -191,8 +195,9 @@ export function useLivenessStateMachine(
       };
     });
     
-    // Advance to next step after cooldown
+    // Play step completion sound and advance to next step
     if (!isLastStep) {
+      playSuccessSound();
       const nextStep = STEP_ORDER[currentIndex + 1];
       setTimeout(() => {
         enterStep(nextStep);
