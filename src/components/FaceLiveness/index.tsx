@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Loader2, Camera, RefreshCcw, Bug, Shield, Sparkles } from 'lucide-react';
+import { Loader2, Camera, RefreshCcw, Bug, Shield } from 'lucide-react';
 
 import { useCamera } from '@/hooks/useCamera';
 import { useFaceDetector, Face } from '@/hooks/useFaceDetector';
@@ -188,40 +188,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
   if (!isStarted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] sm:min-h-[500px] p-4 sm:p-6">
-        <div className="w-full max-w-lg text-center space-y-6 sm:space-y-8">
-          {/* Hero icon */}
-          <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24">
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-primary/5" />
-            <div className="absolute inset-2 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
-              <Camera className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
-            </div>
-            <Sparkles className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse" />
-          </div>
-          
-          {/* Title */}
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 sm:mb-3">Face Verification</h1>
-            <p className="text-muted-foreground text-base sm:text-lg px-2">
-              Quick identity check using your camera
-            </p>
-          </div>
-          
-          {/* Steps preview */}
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 text-left">
-            {[
-              { icon: '👤', text: 'Align your face' },
-              { icon: '👁️', text: 'Blink naturally' },
-              { icon: '↔️', text: 'Turn left & right' },
-              { icon: '↕️', text: 'Look up & down' },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2 sm:gap-3 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-muted/50">
-                <span className="text-lg sm:text-xl">{item.icon}</span>
-                <span className="text-xs sm:text-sm font-medium text-foreground">{item.text}</span>
-              </div>
-            ))}
-          </div>
-          
-          {/* CTA */}
+        <div className="w-full max-w-lg text-center">
           <Button 
             onClick={handleStart} 
             size="lg" 
@@ -240,10 +207,6 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
               </>
             )}
           </Button>
-          
-          <p className="text-xs text-muted-foreground/70">
-            Research demonstration • Not a certified PAD solution
-          </p>
         </div>
       </div>
     );
