@@ -18,6 +18,12 @@ import { calculateAverageEAR, getEyeState } from '@/utils/ear';
 import { calculatePoseMetrics, getYawDelta, getPitchDelta, isRollAcceptable } from '@/utils/pose';
 import { calculateBoundingBox, isFaceInsideGuide } from '@/utils/landmarks';
 import { ema, sma } from '@/utils/smoothing';
+import { 
+  AntiSpoofState, 
+  createAntiSpoofState, 
+  updateAntiSpoofState, 
+  getAntiSpoofDebugInfo 
+} from '@/utils/antiSpoof';
 
 const initialBlinkState: BlinkState = {
   isCalibrating: true,
@@ -68,6 +74,11 @@ export interface LivenessStateMachineControls {
     rollMetric: number;
     alignedFrames: number;
     heldFrames: number;
+    // Anti-spoof metrics
+    depthVariance: number;
+    microMovement: number;
+    spoofScore: number;
+    isSpoof: boolean;
   };
 }
 
@@ -80,6 +91,7 @@ export function useLivenessStateMachine(
   const stateRef = useRef<LivenessState>(initialState);
   const smoothedEARRef = useRef<number>(0);
   const currentMetricsRef = useRef<FaceMetrics | null>(null);
+  const antiSpoofRef = useRef<AntiSpoofState>(createAntiSpoofState());
   
   // Sync ref with state
   const updateState = useCallback((updater: (prev: LivenessState) => LivenessState) => {
@@ -433,6 +445,20 @@ export function useLivenessStateMachine(
       return;
     }
     
+    // Update anti-spoof detection
+    antiSpoofRef.current = updateAntiSpoofState(antiSpoofRef.current, face);
+    
+    // Check for spoof attempt
+    if (antiSpoofRef.current.isSpoof) {
+      updateState(prev => ({
+        ...prev,
+        error: antiSpoofRef.current.reason || 'Photo or screen detected. Use a real face.',
+        alignedFrameCount: 0,
+        headPoseState: initialHeadPoseState,
+      }));
+      return;
+    }
+    
     // Store current metrics
     const poseMetrics = calculatePoseMetrics(face);
     const earData = calculateAverageEAR(face);
@@ -488,6 +514,7 @@ export function useLivenessStateMachine(
   const start = useCallback(() => {
     smoothedEARRef.current = 0;
     currentMetricsRef.current = null;
+    antiSpoofRef.current = createAntiSpoofState();
     
     updateState(() => ({
       ...initialState,
@@ -500,6 +527,7 @@ export function useLivenessStateMachine(
   const restart = useCallback(() => {
     smoothedEARRef.current = 0;
     currentMetricsRef.current = null;
+    antiSpoofRef.current = createAntiSpoofState();
     
     updateState(() => initialState);
     
@@ -521,6 +549,7 @@ export function useLivenessStateMachine(
   const getDebugInfo = useCallback(() => {
     const current = stateRef.current;
     const metrics = currentMetricsRef.current;
+    const antiSpoofDebug = getAntiSpoofDebugInfo(antiSpoofRef.current);
     
     const yawDelta = metrics && current.baselineMetrics
       ? getYawDelta(metrics.yawMetric, current.baselineMetrics.yawMetric)
@@ -539,6 +568,11 @@ export function useLivenessStateMachine(
       rollMetric: metrics?.rollMetric || 0,
       alignedFrames: current.alignedFrameCount,
       heldFrames: current.headPoseState.heldFrames,
+      // Anti-spoof metrics
+      depthVariance: antiSpoofDebug.avgDepthVariance,
+      microMovement: antiSpoofDebug.avgMovement,
+      spoofScore: antiSpoofDebug.spoofScore,
+      isSpoof: antiSpoofDebug.isSpoof,
     };
   }, []);
   

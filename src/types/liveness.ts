@@ -125,6 +125,11 @@ export interface DebugInfo {
   rollMetric: number;
   alignedFrames: number;
   heldFrames: number;
+  // Anti-spoof metrics
+  depthVariance: number;
+  microMovement: number;
+  spoofScore: number;
+  isSpoof: boolean;
 }
 
 // Configuration constants
