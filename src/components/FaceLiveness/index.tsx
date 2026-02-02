@@ -290,6 +290,10 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
           rollMetric={debugInfo.rollMetric}
           alignedFrames={debugInfo.alignedFrames}
           heldFrames={debugInfo.heldFrames}
+          depthVariance={debugInfo.depthVariance}
+          microMovement={debugInfo.microMovement}
+          spoofScore={debugInfo.spoofScore}
+          isSpoof={debugInfo.isSpoof}
         />
       </div>
       
