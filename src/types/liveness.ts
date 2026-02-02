@@ -10,6 +10,26 @@ export type LivenessStep =
   | 'TURN_DOWN'
   | 'SUCCESS';
 
+// Steps that can be randomized (after ALIGN which must be first)
+export const RANDOMIZABLE_STEPS: LivenessStep[] = [
+  'BLINK',
+  'TURN_LEFT',
+  'TURN_RIGHT',
+  'TURN_UP',
+  'TURN_DOWN',
+];
+
+// Generate a randomized step order (ALIGN always first)
+export function generateRandomStepOrder(): LivenessStep[] {
+  const shuffled = [...RANDOMIZABLE_STEPS];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return ['ALIGN', ...shuffled];
+}
+
+// Default fixed order (for reference)
 export const STEP_ORDER: LivenessStep[] = [
   'ALIGN',
   'BLINK',
@@ -84,6 +104,7 @@ export interface HeadPoseState {
 
 export interface LivenessState {
   currentStep: LivenessStep;
+  stepOrder: LivenessStep[]; // Randomized step order for this session
   stepEnteredAt: number;
   stepCompletedAt: number | null;
   alignedFrameCount: number;

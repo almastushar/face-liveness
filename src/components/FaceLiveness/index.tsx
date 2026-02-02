@@ -256,6 +256,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
       <StepIndicator 
         currentStep={livenessState.state.currentStep}
         completedSteps={livenessState.state.completedSteps}
+        stepOrder={livenessState.state.stepOrder}
       />
       
       {/* Camera view with overlays */}
