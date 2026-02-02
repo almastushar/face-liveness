@@ -47,6 +47,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -65,25 +73,42 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "bounce-left": {
+          "0%, 100%": { transform: "translateX(0) translateY(-50%)" },
+          "50%": { transform: "translateX(-8px) translateY(-50%)" },
+        },
+        "bounce-right": {
+          "0%, 100%": { transform: "translateX(0) translateY(-50%)" },
+          "50%": { transform: "translateX(8px) translateY(-50%)" },
+        },
+        "bounce-up": {
+          "0%, 100%": { transform: "translateY(0) translateX(-50%)" },
+          "50%": { transform: "translateY(-8px) translateX(-50%)" },
+        },
+        "bounce-down": {
+          "0%, 100%": { transform: "translateY(0) translateX(-50%)" },
+          "50%": { transform: "translateY(8px) translateX(-50%)" },
+        },
+        "pulse-ring": {
+          "0%": { transform: "scale(1)", opacity: "1" },
+          "100%": { transform: "scale(1.5)", opacity: "0" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "bounce-left": "bounce-left 1s ease-in-out infinite",
+        "bounce-right": "bounce-right 1s ease-in-out infinite",
+        "bounce-up": "bounce-up 1s ease-in-out infinite",
+        "bounce-down": "bounce-down 1s ease-in-out infinite",
+        "pulse-ring": "pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
     },
   },
