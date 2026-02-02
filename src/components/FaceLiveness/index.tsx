@@ -187,36 +187,36 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
   // Welcome screen
   if (!isStarted) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[500px] p-6">
-        <div className="w-full max-w-lg text-center space-y-8">
+      <div className="flex flex-col items-center justify-center min-h-[400px] sm:min-h-[500px] p-4 sm:p-6">
+        <div className="w-full max-w-lg text-center space-y-6 sm:space-y-8">
           {/* Hero icon */}
-          <div className="relative mx-auto w-24 h-24">
+          <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24">
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-primary/5" />
             <div className="absolute inset-2 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
-              <Camera className="w-10 h-10 text-primary" />
+              <Camera className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
             </div>
-            <Sparkles className="absolute -top-1 -right-1 w-6 h-6 text-primary animate-pulse" />
+            <Sparkles className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 text-primary animate-pulse" />
           </div>
           
           {/* Title */}
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-3">Face Verification</h1>
-            <p className="text-muted-foreground text-lg">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 sm:mb-3">Face Verification</h1>
+            <p className="text-muted-foreground text-base sm:text-lg px-2">
               Quick identity check using your camera
             </p>
           </div>
           
           {/* Steps preview */}
-          <div className="grid grid-cols-2 gap-3 text-left">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 text-left">
             {[
               { icon: '👤', text: 'Align your face' },
               { icon: '👁️', text: 'Blink naturally' },
               { icon: '↔️', text: 'Turn left & right' },
               { icon: '↕️', text: 'Look up & down' },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-muted/50">
-                <span className="text-xl">{item.icon}</span>
-                <span className="text-sm font-medium text-foreground">{item.text}</span>
+              <div key={i} className="flex items-center gap-2 sm:gap-3 px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-muted/50">
+                <span className="text-lg sm:text-xl">{item.icon}</span>
+                <span className="text-xs sm:text-sm font-medium text-foreground">{item.text}</span>
               </div>
             ))}
           </div>
@@ -225,7 +225,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
           <Button 
             onClick={handleStart} 
             size="lg" 
-            className="w-full h-14 text-lg font-semibold rounded-xl"
+            className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold rounded-xl"
             disabled={camera.isLoading || detector.isLoading}
           >
             {camera.isLoading || detector.isLoading ? (
@@ -251,7 +251,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
   
   // Active verification
   return (
-    <div className="w-full max-w-2xl mx-auto p-4 space-y-4">
+    <div className="w-full max-w-2xl mx-auto p-2 sm:p-4 space-y-3 sm:space-y-4">
       {/* Progress indicator */}
       <StepIndicator 
         currentStep={livenessState.state.currentStep}
@@ -260,7 +260,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
       />
       
       {/* Camera view with overlays */}
-      <div className="relative rounded-2xl overflow-hidden shadow-xl bg-muted">
+      <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-xl bg-muted aspect-[4/3]">
         <CameraView
           videoRef={camera.videoRef}
           isActive={isStarted}
@@ -306,36 +306,39 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
       />
       
       {/* Controls */}
-      <div className="flex items-center justify-between pt-2">
+      <div className="flex items-center justify-between pt-1 sm:pt-2">
         <Button
           variant="ghost"
           size="sm"
           onClick={handleRestart}
-          className="text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
         >
-          <RefreshCcw className="mr-2 h-4 w-4" />
-          Start Over
+          <RefreshCcw className="mr-1 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
+          <span className="hidden xs:inline">Start Over</span>
+          <span className="xs:hidden">Reset</span>
         </Button>
         
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Switch
               id="debug"
               checked={showDebug}
               onCheckedChange={setShowDebug}
+              className="scale-90 sm:scale-100"
             />
             <Label htmlFor="debug" className="text-sm text-muted-foreground cursor-pointer">
-              <Bug className="h-4 w-4" />
+              <Bug className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Label>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Switch
               id="landmarks"
               checked={showLandmarks}
               onCheckedChange={setShowLandmarks}
+              className="scale-90 sm:scale-100"
             />
-            <Label htmlFor="landmarks" className="text-sm text-muted-foreground cursor-pointer">
+            <Label htmlFor="landmarks" className="text-xs sm:text-sm text-muted-foreground cursor-pointer">
               Dots
             </Label>
           </div>
