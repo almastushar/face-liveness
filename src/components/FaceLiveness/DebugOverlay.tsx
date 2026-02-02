@@ -46,18 +46,18 @@ export function DebugOverlay({
   if (!isVisible) return null;
   
   return (
-    <Card className="absolute top-4 left-4 w-64 bg-background/90 backdrop-blur-sm border-muted text-xs z-10">
-      <CardHeader className="py-2 px-3">
-        <CardTitle className="text-sm flex items-center gap-2">
-          Debug Info
+    <Card className="absolute top-2 left-2 sm:top-4 sm:left-4 w-48 sm:w-64 bg-background/90 backdrop-blur-sm border-muted text-[10px] sm:text-xs z-10 max-h-[60%] overflow-y-auto">
+      <CardHeader className="py-1.5 px-2 sm:py-2 sm:px-3">
+        <CardTitle className="text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2">
+          Debug
           {isSpoof ? (
-            <ShieldAlert className="h-4 w-4 text-destructive" />
+            <ShieldAlert className="h-3 w-3 sm:h-4 sm:w-4 text-destructive" />
           ) : (
-            <ShieldCheck className="h-4 w-4 text-success" />
+            <ShieldCheck className="h-3 w-3 sm:h-4 sm:w-4 text-success" />
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="py-2 px-3 space-y-1">
+      <CardContent className="py-1.5 px-2 sm:py-2 sm:px-3 space-y-0.5 sm:space-y-1">
         <div className="flex justify-between">
           <span className="text-muted-foreground">FPS:</span>
           <span className="font-mono">{fps.toFixed(1)}</span>

@@ -17,13 +17,13 @@ export function DirectionGuide({ currentStep, progress }: DirectionGuideProps) {
   const getArrowConfig = () => {
     switch (currentStep) {
       case 'TURN_LEFT':
-        return { Icon: ArrowLeft, position: 'left-4 top-1/2 -translate-y-1/2', animate: 'animate-bounce-left' };
+        return { Icon: ArrowLeft, position: 'left-2 sm:left-4 top-1/2 -translate-y-1/2', animate: 'animate-bounce-left' };
       case 'TURN_RIGHT':
-        return { Icon: ArrowRight, position: 'right-4 top-1/2 -translate-y-1/2', animate: 'animate-bounce-right' };
+        return { Icon: ArrowRight, position: 'right-2 sm:right-4 top-1/2 -translate-y-1/2', animate: 'animate-bounce-right' };
       case 'TURN_UP':
-        return { Icon: ArrowUp, position: 'top-4 left-1/2 -translate-x-1/2', animate: 'animate-bounce-up' };
+        return { Icon: ArrowUp, position: 'top-2 sm:top-4 left-1/2 -translate-x-1/2', animate: 'animate-bounce-up' };
       case 'TURN_DOWN':
-        return { Icon: ArrowDown, position: 'bottom-4 left-1/2 -translate-x-1/2', animate: 'animate-bounce-down' };
+        return { Icon: ArrowDown, position: 'bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2', animate: 'animate-bounce-down' };
       default:
         return null;
     }
@@ -45,13 +45,13 @@ export function DirectionGuide({ currentStep, progress }: DirectionGuideProps) {
     >
       <div
         className={cn(
-          "flex items-center justify-center w-14 h-14 rounded-full backdrop-blur-sm transition-all duration-300",
+          "flex items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-full backdrop-blur-sm transition-all duration-300",
           isNearTarget 
             ? "bg-[hsl(var(--success))]/90 text-[hsl(var(--success-foreground))] scale-110" 
             : "bg-primary/80 text-primary-foreground"
         )}
       >
-        <Icon className="w-8 h-8" />
+        <Icon className="w-5 h-5 sm:w-8 sm:h-8" />
       </div>
     </div>
   );

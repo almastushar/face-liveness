@@ -41,7 +41,7 @@ export function ActionPrompt({ currentStep, error, isCalibrating }: ActionPrompt
   return (
     <div
       className={cn(
-        "flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300",
+        "flex items-center gap-3 sm:gap-4 px-4 py-3 sm:px-6 sm:py-4 rounded-xl sm:rounded-2xl transition-all duration-300",
         error 
           ? "bg-destructive/10 border border-destructive/20" 
           : "bg-card border border-border shadow-lg"
@@ -49,26 +49,26 @@ export function ActionPrompt({ currentStep, error, isCalibrating }: ActionPrompt
     >
       <div
         className={cn(
-          "flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300",
+          "flex-shrink-0 flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl transition-all duration-300",
           error 
             ? "bg-destructive/10 text-destructive" 
             : "bg-primary/10 text-primary"
         )}
       >
-        <Icon className={cn("w-6 h-6", !error && currentStep === 'BLINK' && "animate-pulse")} />
+        <Icon className={cn("w-5 h-5 sm:w-6 sm:h-6", !error && currentStep === 'BLINK' && "animate-pulse")} />
       </div>
 
       <div className="flex-1 min-w-0">
         <p
           className={cn(
-            "font-semibold text-lg truncate transition-colors",
+            "font-semibold text-base sm:text-lg truncate transition-colors",
             error ? "text-destructive" : "text-foreground"
           )}
         >
           {instruction}
         </p>
         {subtext && (
-          <p className="text-sm text-muted-foreground mt-0.5">{subtext}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 truncate">{subtext}</p>
         )}
       </div>
     </div>
