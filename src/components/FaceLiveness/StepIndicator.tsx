@@ -2,11 +2,12 @@
 
 import { Check, Eye, MoveLeft, MoveRight, MoveUp, MoveDown, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { LivenessStep, STEP_ORDER } from '@/types/liveness';
+import { LivenessStep } from '@/types/liveness';
 
 interface StepIndicatorProps {
   currentStep: LivenessStep;
   completedSteps: LivenessStep[];
+  stepOrder: LivenessStep[];
 }
 
 const STEP_ICONS: Record<LivenessStep, React.ElementType> = {
@@ -31,10 +32,10 @@ const STEP_LABELS: Record<LivenessStep, string> = {
   SUCCESS: 'Done',
 };
 
-export function StepIndicator({ currentStep, completedSteps }: StepIndicatorProps) {
+export function StepIndicator({ currentStep, completedSteps, stepOrder }: StepIndicatorProps) {
   return (
     <div className="flex items-center justify-center gap-1 sm:gap-2 px-2">
-      {STEP_ORDER.map((step, index) => {
+      {stepOrder.map((step, index) => {
         const Icon = STEP_ICONS[step];
         const isCompleted = completedSteps.includes(step);
         const isCurrent = currentStep === step;
@@ -72,7 +73,7 @@ export function StepIndicator({ currentStep, completedSteps }: StepIndicatorProp
               </span>
             </div>
             
-            {index < STEP_ORDER.length - 1 && (
+            {index < stepOrder.length - 1 && (
               <div
                 className={cn(
                   "w-4 sm:w-8 h-0.5 mx-0.5 sm:mx-1 transition-colors duration-300 -mt-5",

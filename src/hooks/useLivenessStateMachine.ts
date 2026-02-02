@@ -9,6 +9,7 @@ import {
   HeadPoseState,
   BaselineMetrics,
   STEP_ORDER,
+  generateRandomStepOrder,
   CONFIG,
   LivenessResult,
   FaceMetrics,
@@ -46,6 +47,7 @@ const initialHeadPoseState: HeadPoseState = {
 
 const initialState: LivenessState = {
   currentStep: 'IDLE',
+  stepOrder: STEP_ORDER, // Will be randomized on start
   stepEnteredAt: 0,
   stepCompletedAt: null,
   alignedFrameCount: 0,
@@ -124,8 +126,10 @@ export function useLivenessStateMachine(
   // Complete current step and advance
   const completeStep = useCallback((step: LivenessStep) => {
     const now = Date.now();
-    const currentIndex = STEP_ORDER.indexOf(step);
-    const isLastStep = currentIndex === STEP_ORDER.length - 1;
+    const current = stateRef.current;
+    const stepOrder = current.stepOrder;
+    const currentIndex = stepOrder.indexOf(step);
+    const isLastStep = currentIndex === stepOrder.length - 1;
     
     updateState(prev => {
       const newCompletedSteps = [...prev.completedSteps, step];
@@ -198,7 +202,7 @@ export function useLivenessStateMachine(
     // Play step completion sound and advance to next step
     if (!isLastStep) {
       playSuccessSound();
-      const nextStep = STEP_ORDER[currentIndex + 1];
+      const nextStep = stepOrder[currentIndex + 1];
       setTimeout(() => {
         enterStep(nextStep);
       }, CONFIG.STEP_COOLDOWN_MS);
@@ -515,14 +519,17 @@ export function useLivenessStateMachine(
     }
   }, [updateState, processAlign, processBlink, processHeadTurn]);
   
-  // Start verification
+  // Start verification with randomized step order
   const start = useCallback(() => {
     smoothedEARRef.current = 0;
     currentMetricsRef.current = null;
     antiSpoofRef.current = createAntiSpoofState();
     
+    const randomizedOrder = generateRandomStepOrder();
+    
     updateState(() => ({
       ...initialState,
+      stepOrder: randomizedOrder,
       currentStep: 'ALIGN',
       stepEnteredAt: Date.now(),
     }));
@@ -544,9 +551,9 @@ export function useLivenessStateMachine(
   const getCurrentStepNumber = useCallback(() => {
     const current = stateRef.current;
     if (current.currentStep === 'IDLE') return 0;
-    if (current.currentStep === 'SUCCESS') return STEP_ORDER.length;
+    if (current.currentStep === 'SUCCESS') return current.stepOrder.length;
     
-    const index = STEP_ORDER.indexOf(current.currentStep);
+    const index = current.stepOrder.indexOf(current.currentStep);
     return index >= 0 ? index + 1 : 0;
   }, []);
   
