@@ -29,8 +29,9 @@ function calculateYawMetric(face: Face): number {
   if (faceWidth === 0) return 0;
   
   // Yaw metric: how far nose is from center, normalized by face width
-  // Negative = looking left, Positive = looking right
-  const yawMetric = (noseTip[0] - midCheekX) / faceWidth;
+  // Invert because camera is mirrored (scaleX(-1)) - user's left should match screen left
+  // Negative = looking left, Positive = looking right (from user's perspective)
+  const yawMetric = -((noseTip[0] - midCheekX) / faceWidth);
   
   return yawMetric;
 }
