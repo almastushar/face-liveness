@@ -1,7 +1,6 @@
 // Main FaceLiveness component
 
 import { useState, useCallback, useRef, useEffect } from 'react';
-import type { Face } from '@tensorflow-models/face-landmarks-detection';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -9,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, Camera, RefreshCcw, Bug } from 'lucide-react';
 
 import { useCamera } from '@/hooks/useCamera';
-import { useFaceDetector } from '@/hooks/useFaceDetector';
+import { useFaceDetector, Face } from '@/hooks/useFaceDetector';
 import { useRafThrottleLoop } from '@/hooks/useRafThrottleLoop';
 import { useLivenessStateMachine } from '@/hooks/useLivenessStateMachine';
 
@@ -33,8 +32,8 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
   const [guideBox, setGuideBox] = useState<BoundingBox | null>(null);
   const [fps, setFps] = useState(0);
   const [result, setResult] = useState<LivenessResult | null>(null);
+  const [loadingMessage, setLoadingMessage] = useState('');
   
-  const lastFrameTimeRef = useRef(0);
   const frameCountRef = useRef(0);
   const fpsIntervalRef = useRef<number | null>(null);
   
@@ -78,8 +77,8 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
     const face = faces.length > 0 ? faces[0] : null;
     setCurrentFace(face);
     
-    // Process face in state machine
-    livenessState.processFace(face, guideBox);
+    // Process face in state machine - cast to the expected type
+    livenessState.processFace(face as any, guideBox);
     
     // FPS counter
     frameCountRef.current++;
@@ -94,7 +93,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
   
   // FPS calculation
   useEffect(() => {
-    if (isStarted) {
+    if (isStarted && detector.isReady) {
       fpsIntervalRef.current = window.setInterval(() => {
         setFps(frameCountRef.current);
         frameCountRef.current = 0;
@@ -106,20 +105,31 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
         clearInterval(fpsIntervalRef.current);
       }
     };
-  }, [isStarted]);
+  }, [isStarted, detector.isReady]);
   
   // Start verification
   const handleStart = async () => {
     setResult(null);
-    await camera.startCamera();
+    setLoadingMessage('Starting camera...');
     
-    // Wait a bit for video to be ready
-    setTimeout(() => {
-      const newGuideBox = calculateGuideBox();
-      setGuideBox(newGuideBox);
-      livenessState.start();
-      setIsStarted(true);
-    }, 500);
+    try {
+      await camera.startCamera();
+      
+      setLoadingMessage('Loading face detection model (this may take a moment)...');
+      await detector.initialize();
+      
+      // Wait a bit for video to be ready
+      setTimeout(() => {
+        const newGuideBox = calculateGuideBox();
+        setGuideBox(newGuideBox);
+        livenessState.start();
+        setIsStarted(true);
+        setLoadingMessage('');
+      }, 500);
+    } catch (err) {
+      console.error('Failed to start:', err);
+      setLoadingMessage('');
+    }
   };
   
   // Restart verification
@@ -134,7 +144,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
   // Get debug info
   const debugInfo = livenessState.getDebugInfo();
   const insideGuide = currentFace && guideBox 
-    ? isFaceInsideGuide(calculateBoundingBox(currentFace), guideBox, CONFIG.INSIDE_GUIDE_MARGIN)
+    ? isFaceInsideGuide(calculateBoundingBox(currentFace as any), guideBox, CONFIG.INSIDE_GUIDE_MARGIN)
     : false;
   
   // Show success screen
@@ -146,13 +156,12 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
     );
   }
   
-  // Loading state
-  if (detector.isLoading) {
+  // Loading state (while initializing)
+  if (loadingMessage) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] p-6">
         <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground">Loading face detection model...</p>
-        <p className="text-sm text-muted-foreground mt-2">This may take a moment</p>
+        <p className="text-muted-foreground text-center">{loadingMessage}</p>
       </div>
     );
   }
@@ -191,7 +200,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
     );
   }
   
-  // Not started
+  // Not started - show welcome screen
   if (!isStarted) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] p-6">
@@ -222,12 +231,12 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
               onClick={handleStart} 
               size="lg" 
               className="w-full"
-              disabled={camera.isLoading}
+              disabled={camera.isLoading || detector.isLoading}
             >
-              {camera.isLoading ? (
+              {camera.isLoading || detector.isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Starting Camera...
+                  Loading...
                 </>
               ) : (
                 'Start Verification'
@@ -251,7 +260,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
         <CameraView
           videoRef={camera.videoRef}
           isActive={isStarted}
-          face={currentFace}
+          face={currentFace as any}
           guideBox={guideBox}
           showLandmarks={showLandmarks}
         />
