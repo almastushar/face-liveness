@@ -31,6 +31,10 @@ export interface FaceDetectorControls {
   dispose: () => void;
 }
 
+// Lazy loaded modules
+let tf: typeof import('@tensorflow/tfjs') | null = null;
+let faceLandmarksDetection: typeof import('@tensorflow-models/face-landmarks-detection') | null = null;
+
 export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
   const [state, setState] = useState<FaceDetectorState>({
     isLoading: false,
@@ -49,9 +53,14 @@ export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      // Dynamic imports to avoid blocking initial page load
-      const tf = await import('@tensorflow/tfjs');
-      const faceLandmarksDetection = await import('@tensorflow-models/face-landmarks-detection');
+      // Load TensorFlow.js if not already loaded
+      if (!tf) {
+        tf = await import('@tensorflow/tfjs');
+      }
+      
+      if (!faceLandmarksDetection) {
+        faceLandmarksDetection = await import('@tensorflow-models/face-landmarks-detection');
+      }
       
       // Set backend
       await tf.setBackend('webgl');
