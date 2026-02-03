@@ -108,10 +108,19 @@ export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
   // Detect faces in video
   const detectFaces = useCallback(async (video: HTMLVideoElement): Promise<Face[]> => {
     if (!detectorRef.current) {
+      console.log('Detector not ready');
       return [];
     }
     
+    // Check video readiness more thoroughly
     if (video.readyState < 2) {
+      console.log('Video not ready, readyState:', video.readyState);
+      return [];
+    }
+    
+    // Ensure video has valid dimensions
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      console.log('Video has no dimensions');
       return [];
     }
     
