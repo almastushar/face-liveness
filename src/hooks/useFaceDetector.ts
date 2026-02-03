@@ -56,6 +56,8 @@ export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
       // Load TensorFlow.js if not already loaded
       if (!tf) {
         tf = await import('@tensorflow/tfjs');
+        // Explicitly import WebGL backend for tfjs runtime
+        await import('@tensorflow/tfjs-backend-webgl');
       }
       
       if (!faceLandmarksDetection) {
@@ -65,6 +67,8 @@ export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
       // Set backend - use WebGL for better performance
       await tf.setBackend('webgl');
       await tf.ready();
+      
+      console.log('TensorFlow.js backend ready:', tf.getBackend());
       
       // Create detector with MediaPipe FaceMesh model using TFJS runtime
       // Note: Using 'tfjs' runtime instead of 'mediapipe' to avoid CDN loading issues
@@ -115,6 +119,11 @@ export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
       const faces = await detectorRef.current.estimateFaces(video, {
         flipHorizontal: false,
       });
+      
+      if (faces.length > 0) {
+        console.log('Face detected with', faces[0].keypoints?.length, 'keypoints');
+      }
+      
       return faces;
     } catch (err) {
       console.error('Face detection error:', err);
