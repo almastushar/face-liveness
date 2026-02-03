@@ -93,6 +93,8 @@ export function useLivenessStateMachine(
   // Refs for mutable state that doesn't need re-renders
   const stateRef = useRef<LivenessState>(initialState);
   const smoothedEARRef = useRef<number>(0);
+  const smoothedYawRef = useRef<number>(0);
+  const smoothedPitchRef = useRef<number>(0);
   const currentMetricsRef = useRef<FaceMetrics | null>(null);
   const antiSpoofRef = useRef<AntiSpoofState>(createAntiSpoofState());
   
@@ -347,10 +349,16 @@ export function useLivenessStateMachine(
     
     const poseMetrics = calculatePoseMetrics(face);
     const earDataTurn = calculateAverageEAR(face);
+    
+    // Apply EMA smoothing to yaw and pitch for smoother detection
+    const POSE_SMOOTHING_ALPHA = 0.4; // Higher = more responsive, lower = smoother
+    smoothedYawRef.current = ema(poseMetrics.yawMetric, smoothedYawRef.current, POSE_SMOOTHING_ALPHA);
+    smoothedPitchRef.current = ema(poseMetrics.pitchMetric, smoothedPitchRef.current, POSE_SMOOTHING_ALPHA);
+    
     currentMetricsRef.current = {
       boundingBox: calculateBoundingBox(face),
-      yawMetric: poseMetrics.yawMetric,
-      pitchMetric: poseMetrics.pitchMetric,
+      yawMetric: smoothedYawRef.current,
+      pitchMetric: smoothedPitchRef.current,
       rollMetric: poseMetrics.rollMetric,
       faceWidth: poseMetrics.faceWidth,
       faceHeight: poseMetrics.faceHeight,
@@ -374,8 +382,9 @@ export function useLivenessStateMachine(
       }));
     }
     
-    const yawDelta = getYawDelta(poseMetrics.yawMetric, current.baselineMetrics.yawMetric);
-    const pitchDelta = getPitchDelta(poseMetrics.pitchMetric, current.baselineMetrics.pitchMetric);
+    // Use smoothed values for delta calculation
+    const yawDelta = getYawDelta(smoothedYawRef.current, current.baselineMetrics.yawMetric);
+    const pitchDelta = getPitchDelta(smoothedPitchRef.current, current.baselineMetrics.pitchMetric);
     
     let targetReached = false;
     
