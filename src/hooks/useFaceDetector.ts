@@ -66,12 +66,13 @@ export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
       await tf.setBackend('webgl');
       await tf.ready();
       
-      // Create detector with MediaPipe FaceMesh model
+      // Create detector with MediaPipe FaceMesh model using tfjs runtime
+      // Note: Using 'tfjs' runtime instead of 'mediapipe' to avoid production build issues
+      // where FaceMesh constructor fails due to bundling/minification conflicts
       const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
       
       const detectorConfig = {
-        runtime: 'mediapipe' as const,
-        solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh',
+        runtime: 'tfjs' as const,
         refineLandmarks: true,
         maxFaces: 1,
       };
