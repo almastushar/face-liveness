@@ -20,6 +20,7 @@ import { SuccessScreen } from './SuccessScreen';
 
 import { CONFIG, BoundingBox, LivenessResult } from '@/types/liveness';
 import { isFaceInsideGuide, calculateBoundingBox } from '@/utils/landmarks';
+import { cn } from '@/lib/utils';
 
 interface FaceLivenessProps {
   onSuccess?: (result: LivenessResult) => void;
@@ -141,7 +142,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
   // Show success screen
   if (livenessState.state.isComplete && result) {
     return (
-      <div className="w-full max-w-2xl mx-auto p-4">
+      <div className="w-full max-w-2xl mx-auto p-4 animate-fade-in-scale">
         <SuccessScreen result={result} onRestart={handleRestart} />
       </div>
     );
@@ -150,14 +151,14 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
   // Loading state
   if (loadingMessage) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[500px] p-6">
+      <div className="flex flex-col items-center justify-center min-h-[500px] p-6 animate-fade-in">
         <div className="relative">
           <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-          <div className="relative flex items-center justify-center w-20 h-20 rounded-full bg-primary/10">
+          <div className="relative flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 animate-glow-pulse">
             <Loader2 className="w-10 h-10 animate-spin text-primary" />
           </div>
         </div>
-        <p className="text-muted-foreground text-center mt-6 text-lg">{loadingMessage}</p>
+        <p className="text-muted-foreground text-center mt-6 text-lg animate-pulse">{loadingMessage}</p>
         <p className="text-muted-foreground/60 text-sm mt-2">This may take a moment...</p>
       </div>
     );
@@ -187,12 +188,16 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
   // Welcome screen
   if (!isStarted) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] sm:min-h-[500px] p-4 sm:p-6">
+      <div className="flex flex-col items-center justify-center min-h-[400px] sm:min-h-[500px] p-4 sm:p-6 animate-fade-in">
         <div className="w-full max-w-lg text-center">
           <Button 
             onClick={handleStart} 
             size="lg" 
-            className="w-full h-12 sm:h-14 text-base sm:text-lg font-semibold rounded-xl"
+            className={cn(
+              "w-full h-12 sm:h-14 text-base sm:text-lg font-semibold rounded-xl",
+              "transition-all duration-300 ease-out",
+              "hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]"
+            )}
             disabled={camera.isLoading || detector.isLoading}
           >
             {camera.isLoading || detector.isLoading ? (
@@ -214,7 +219,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
   
   // Active verification
   return (
-    <div className="w-full max-w-2xl mx-auto p-2 sm:p-4 space-y-3 sm:space-y-4">
+    <div className="w-full max-w-2xl mx-auto p-2 sm:p-4 space-y-3 sm:space-y-4 animate-fade-in">
       {/* Progress indicator */}
       <StepIndicator 
         currentStep={livenessState.state.currentStep}
@@ -223,7 +228,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
       />
       
       {/* Camera view with overlays */}
-      <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-xl bg-muted aspect-[4/3]">
+      <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-xl bg-muted aspect-[4/3] animate-fade-in-scale">
         <CameraView
           videoRef={camera.videoRef}
           isActive={isStarted}
@@ -274,7 +279,7 @@ export function FaceLiveness({ onSuccess }: FaceLivenessProps) {
           variant="ghost"
           size="sm"
           onClick={handleRestart}
-          className="text-muted-foreground hover:text-foreground text-xs sm:text-sm"
+          className="text-muted-foreground hover:text-foreground text-xs sm:text-sm transition-all duration-200 hover:scale-105 active:scale-95"
         >
           <RefreshCcw className="mr-1 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           <span className="hidden xs:inline">Start Over</span>

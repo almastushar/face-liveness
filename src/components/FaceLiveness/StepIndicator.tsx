@@ -1,4 +1,4 @@
-// Modern step indicator with icons and animations
+// Modern step indicator with icons and smooth animations
 
 import { Check, Eye, MoveLeft, MoveRight, MoveUp, MoveDown, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -34,7 +34,7 @@ const STEP_LABELS: Record<LivenessStep, string> = {
 
 export function StepIndicator({ currentStep, completedSteps, stepOrder }: StepIndicatorProps) {
   return (
-    <div className="flex items-center justify-center gap-1 sm:gap-2 px-2">
+    <div className="flex items-center justify-center gap-1 sm:gap-2 px-2 animate-fade-in">
       {stepOrder.map((step, index) => {
         const Icon = STEP_ICONS[step];
         const isCompleted = completedSteps.includes(step);
@@ -46,26 +46,33 @@ export function StepIndicator({ currentStep, completedSteps, stepOrder }: StepIn
             <div className="flex flex-col items-center gap-1">
               <div
                 className={cn(
-                  "relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full transition-all duration-300",
-                  isCompleted && "bg-[hsl(var(--success))] text-[hsl(var(--success-foreground))] scale-100",
-                  isCurrent && "bg-primary text-primary-foreground ring-4 ring-primary/20 scale-110",
+                  "relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full",
+                  "transition-all duration-500 ease-out",
+                  isCompleted && "bg-success text-success-foreground",
+                  isCurrent && "bg-primary text-primary-foreground ring-4 ring-primary/20 scale-110 animate-glow-pulse",
                   isPending && "bg-muted text-muted-foreground"
                 )}
               >
-                {isCompleted ? (
-                  <Check className="w-4 h-4 sm:w-5 sm:h-5" />
-                ) : (
-                  <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                )}
+                <div className={cn(
+                  "transition-transform duration-300",
+                  isCompleted && "scale-100",
+                  isCurrent && "scale-110"
+                )}>
+                  {isCompleted ? (
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5" />
+                  ) : (
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                  )}
+                </div>
                 {isCurrent && (
-                  <span className="absolute inset-0 rounded-full animate-ping bg-primary/30" />
+                  <span className="absolute inset-0 rounded-full animate-pulse-ring bg-primary/40" />
                 )}
               </div>
               <span
                 className={cn(
-                  "text-[10px] sm:text-xs font-medium transition-colors",
-                  isCompleted && "text-[hsl(var(--success))]",
-                  isCurrent && "text-primary",
+                  "text-[10px] sm:text-xs font-medium transition-all duration-300",
+                  isCompleted && "text-success",
+                  isCurrent && "text-primary font-semibold",
                   isPending && "text-muted-foreground"
                 )}
               >
@@ -74,12 +81,15 @@ export function StepIndicator({ currentStep, completedSteps, stepOrder }: StepIn
             </div>
             
             {index < stepOrder.length - 1 && (
-              <div
-                className={cn(
-                  "w-4 sm:w-8 h-0.5 mx-0.5 sm:mx-1 transition-colors duration-300 -mt-5",
-                  isCompleted ? "bg-[hsl(var(--success))]" : "bg-muted"
-                )}
-              />
+              <div className="relative w-4 sm:w-8 h-0.5 mx-0.5 sm:mx-1 -mt-5 overflow-hidden">
+                <div className={cn(
+                  "absolute inset-0 bg-muted transition-all duration-500"
+                )} />
+                <div className={cn(
+                  "absolute inset-0 bg-success transition-all duration-500 ease-out origin-left",
+                  isCompleted ? "scale-x-100" : "scale-x-0"
+                )} />
+              </div>
             )}
           </div>
         );
