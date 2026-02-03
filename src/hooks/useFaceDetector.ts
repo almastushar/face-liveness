@@ -55,41 +55,28 @@ export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
     try {
       // Load TensorFlow.js if not already loaded
       if (!tf) {
-        console.log('[FaceDetector] Loading TensorFlow.js...');
         tf = await import('@tensorflow/tfjs');
       }
       
       if (!faceLandmarksDetection) {
-        console.log('[FaceDetector] Loading face-landmarks-detection...');
         faceLandmarksDetection = await import('@tensorflow-models/face-landmarks-detection');
       }
       
-      // Set backend - try webgl first, fallback to cpu
-      console.log('[FaceDetector] Setting up backend...');
-      try {
-        await tf.setBackend('webgl');
-      } catch (e) {
-        console.warn('[FaceDetector] WebGL not available, falling back to CPU');
-        await tf.setBackend('cpu');
-      }
+      // Set backend
+      await tf.setBackend('webgl');
       await tf.ready();
-      console.log('[FaceDetector] Backend ready:', tf.getBackend());
       
-      // Create detector with MediaPipe FaceMesh model using tfjs runtime
-      // Note: Using 'tfjs' runtime instead of 'mediapipe' to avoid production build issues
-      // where FaceMesh constructor fails due to bundling/minification conflicts
+      // Create detector with MediaPipe FaceMesh model
       const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
-      console.log('[FaceDetector] Creating detector with model:', model);
       
       const detectorConfig = {
-        runtime: 'tfjs' as const,
+        runtime: 'mediapipe' as const,
+        solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh',
         refineLandmarks: true,
         maxFaces: 1,
       };
       
-      console.log('[FaceDetector] Detector config:', detectorConfig);
       const detector = await faceLandmarksDetection.createDetector(model, detectorConfig);
-      console.log('[FaceDetector] Detector created successfully');
       detectorRef.current = detector;
       
       setState({
@@ -117,7 +104,6 @@ export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
   // Detect faces in video
   const detectFaces = useCallback(async (video: HTMLVideoElement): Promise<Face[]> => {
     if (!detectorRef.current) {
-      console.warn('[FaceDetector] Detector not ready');
       return [];
     }
     
@@ -129,14 +115,9 @@ export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
       const faces = await detectorRef.current.estimateFaces(video, {
         flipHorizontal: false,
       });
-      
-      if (faces.length > 0) {
-        console.log('[FaceDetector] Detected faces:', faces.length);
-      }
-      
       return faces;
     } catch (err) {
-      console.error('[FaceDetector] Face detection error:', err);
+      console.error('Face detection error:', err);
       return [];
     }
   }, []);
