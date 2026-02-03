@@ -56,8 +56,6 @@ export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
       // Load TensorFlow.js if not already loaded
       if (!tf) {
         tf = await import('@tensorflow/tfjs');
-        // Explicitly import WebGL backend for tfjs runtime
-        await import('@tensorflow/tfjs-backend-webgl');
       }
       
       if (!faceLandmarksDetection) {
@@ -70,18 +68,23 @@ export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
       
       console.log('TensorFlow.js backend ready:', tf.getBackend());
       
-      // Create detector with MediaPipe FaceMesh model using TFJS runtime
-      // Note: Using 'tfjs' runtime instead of 'mediapipe' to avoid CDN loading issues
+      // Create detector with MediaPipe FaceMesh model
       const model = faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh;
       
+      // Use mediapipe runtime with CDN path (script loaded in index.html)
       const detectorConfig = {
-        runtime: 'tfjs' as const,
+        runtime: 'mediapipe' as const,
+        solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619',
         refineLandmarks: true,
         maxFaces: 1,
       };
       
+      console.log('Creating face detector with config:', detectorConfig);
+      
       const detector = await faceLandmarksDetection.createDetector(model, detectorConfig);
       detectorRef.current = detector;
+      
+      console.log('Face detector created successfully');
       
       setState({
         isLoading: false,
@@ -108,19 +111,16 @@ export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
   // Detect faces in video
   const detectFaces = useCallback(async (video: HTMLVideoElement): Promise<Face[]> => {
     if (!detectorRef.current) {
-      console.log('Detector not ready');
       return [];
     }
     
-    // Check video readiness more thoroughly
+    // Check video readiness
     if (video.readyState < 2) {
-      console.log('Video not ready, readyState:', video.readyState);
       return [];
     }
     
     // Ensure video has valid dimensions
     if (video.videoWidth === 0 || video.videoHeight === 0) {
-      console.log('Video has no dimensions');
       return [];
     }
     
@@ -128,10 +128,6 @@ export function useFaceDetector(): FaceDetectorState & FaceDetectorControls {
       const faces = await detectorRef.current.estimateFaces(video, {
         flipHorizontal: false,
       });
-      
-      if (faces.length > 0) {
-        console.log('Face detected with', faces[0].keypoints?.length, 'keypoints');
-      }
       
       return faces;
     } catch (err) {
