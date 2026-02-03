@@ -15,11 +15,13 @@ export function DirectionGuide({ currentStep, progress }: DirectionGuideProps) {
   }
 
   const getArrowConfig = () => {
+    // Positions are mirrored to match the camera's mirror view
+    // When user turns left, their head moves to the RIGHT side of the screen
     switch (currentStep) {
       case 'TURN_LEFT':
-        return { Icon: ArrowLeft, position: 'left-3 sm:left-6 top-1/2 -translate-y-1/2', animate: 'animate-bounce-left' };
+        return { Icon: ArrowLeft, position: 'right-3 sm:right-6 top-1/2 -translate-y-1/2', animate: 'animate-bounce-right' };
       case 'TURN_RIGHT':
-        return { Icon: ArrowRight, position: 'right-3 sm:right-6 top-1/2 -translate-y-1/2', animate: 'animate-bounce-right' };
+        return { Icon: ArrowRight, position: 'left-3 sm:left-6 top-1/2 -translate-y-1/2', animate: 'animate-bounce-left' };
       case 'TURN_UP':
         return { Icon: ArrowUp, position: 'top-3 sm:top-6 left-1/2 -translate-x-1/2', animate: 'animate-bounce-up' };
       case 'TURN_DOWN':
